@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Pink Matrix Love Hacker Webpage - Ultra Visible Matrix</title>
+<style>
+/*
+  ============================================================
+  EDIT CONTROL PANEL
+  ============================================================
+  Background photo source is set inside .bg-photo
+  Music source: change music.mp3 inside <audio>
+  Background visibility: change --bg-opacity
+  Background blur: change --bg-blur
+  Final heart text: change CONFIG.finalHeartText in JavaScript
+*/
+
+:root {
+  --bg-opacity: 0.72;
+  --bg-blur: 0px;
+  --bg-position: center center;
+
+  --pink: #ff4fd8;
+  --hot-pink: #ff1493;
+  --soft-pink: #ff9bea;
+  --white-pink: #ffe6fb;
+  --dark: #030006;
+
+  --font-hacker: "Courier New", Courier, monospace;
+  --font-main: Arial, Helvetica, sans-serif;
+
+  --glow-soft: 0 0 12px rgba(255,79,216,0.85), 0 0 28px rgba(255,20,147,0.55);
+  --glow-strong: 0 0 15px rgba(255,220,248,1), 0 0 34px rgba(255,20,147,0.92), 0 0 70px rgba(255,20,147,0.45);
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  color: var(--white-pink);
+  font-family: var(--font-hacker);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  touch-action: manipulation;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Background photo stays visible from start to end */
+.bg-photo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("https://instagram.fccu9-4.fna.fbcdn.net/v/t51.82787-15/731574556_18137358175516761_9136975307852311207_n.webp?_nc_cat=101&ig_cache_key=MzkzMDA4OTEzMDQ1ODk1NjY1Nw%3D%3D.3-ccb7-5&ccb=7-5&_nc_sid=58cdad&efg=eyJ2ZW5jb2RlX3RhZyI6IkZFRUQueHBpZHMuMTQ0MC5zZHIucmVndWxhcl9waG90by5DMyJ9&_nc_ohc=4dJnObWuQTQQ7kNvwFxap1b&_nc_oc=AdqgiY-PrDlJYnqD5m2HYeVwpKSkuGHRAq3dNhmG1No07HbP-LBKS7d7R8A0_ZiWcWDd7bFO32gOFoOyW1DHkmh-&_nc_ad=z-m&_nc_cid=1174&_nc_zt=23&_nc_ht=instagram.fccu9-4.fna&_nc_gid=-XGx8PLtAH6lBxURq-MyPg&_nc_ss=7a22e&oh=00_Af_2_RKFAeTU2DbsZ6syB7O0CZ_Q9imr5-FIy0OAxSuSTA&oe=6A4805E3");
+  background-size: cover;
+  background-position: var(--bg-position);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: var(--bg-opacity);
+  filter: blur(var(--bg-blur));
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+.dark-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at center, rgba(255,20,147,0.16), transparent 42%),
+    radial-gradient(circle at top left, rgba(255,79,216,0.12), transparent 34%),
+    linear-gradient(135deg, rgba(0,0,0,0.12), rgba(0,0,0,0.34));
+  pointer-events: none;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+#matrixCanvas { z-index: 2; mix-blend-mode: screen; opacity: 1; }
+#particleCanvas { z-index: 3; }
+#sceneCanvas { z-index: 7; }
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.24;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.045) 0px,
+    rgba(255,255,255,0.045) 1px,
+    transparent 2px,
+    transparent 5px
+  );
+  mix-blend-mode: screen;
+  animation: scanMove 8s linear infinite;
+}
+
+@keyframes scanMove {
+  from { transform: translateY(0); }
+  to { transform: translateY(22px); }
+}
+
+.glow-border {
+  position: fixed;
+  inset: 10px;
+  z-index: 4;
+  border: 1px solid rgba(255,79,216,0.38);
+  border-radius: 22px;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 44px rgba(255,20,147,0.16),
+    0 0 38px rgba(255,20,147,0.22);
+}
+
+.glow-border::before,
+.glow-border::after {
+  content: "";
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  border-color: rgba(255,155,234,0.8);
+  filter: drop-shadow(0 0 12px rgba(255,79,216,0.85));
+}
+
+.glow-border::before {
+  top: 9px;
+  left: 9px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  border-radius: 18px 0 0 0;
+}
+
+.glow-border::after {
+  right: 9px;
+  bottom: 9px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  border-radius: 0 0 18px 0;
+}
+
+.hud-text {
+  position: fixed;
+  z-index: 5;
+  color: rgba(255,190,242,0.53);
+  font-size: clamp(8px, 1.2vw, 12px);
+  line-height: 1.65;
+  letter-spacing: 1.1px;
+  text-shadow: 0 0 11px rgba(255,79,216,0.65);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.hud-tl { top: 16px; left: 18px; }
+.hud-tr { top: 16px; right: 18px; text-align: right; }
+.hud-bl { bottom: 43px; left: 18px; }
+
+.code-line {
+  position: fixed;
+  z-index: 5;
+  left: 22px;
+  max-width: 94vw;
+  color: rgba(255,155,234,0.34);
+  font-size: clamp(9px, 1.25vw, 13px);
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(255,79,216,0.7);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: codeFloat 7s linear infinite;
+}
+
+.code-line.one { top: 15%; animation-delay: 0s; }
+.code-line.two { top: 27%; left: auto; right: 28px; animation-delay: -1.4s; }
+.code-line.three { top: 69%; animation-delay: -3s; }
+.code-line.four { top: 80%; left: auto; right: 28px; animation-delay: -4.2s; }
+
+@keyframes codeFloat {
+  0% { opacity: 0.07; transform: translateX(-12px); }
+  35% { opacity: 0.45; }
+  72% { opacity: 0.22; }
+  100% { opacity: 0.07; transform: translateX(12px); }
+}
+
+/* Loading intro */
+.loading-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at center, rgba(255,20,147,0.16), rgba(0,0,0,0.20) 36%, rgba(0,0,0,0.44));
+  transition: opacity 850ms ease, visibility 850ms ease;
+}
+
+.loading-scene.hide {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loader-box {
+  width: min(520px, 90vw);
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,79,216,0.48);
+  background: rgba(10,0,12,0.58);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 38px rgba(255,20,147,0.25),
+    inset 0 0 28px rgba(255,79,216,0.10);
+  text-align: center;
+}
+
+.loader-title {
+  font-family: var(--font-hacker);
+  font-size: clamp(18px, 4vw, 36px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffd6f7;
+  text-shadow: var(--glow-strong);
+  animation: titlePulse 1.35s ease-in-out infinite alternate;
+}
+
+.loader-sub {
+  margin-top: 12px;
+  color: rgba(255,220,248,0.82);
+  font-size: clamp(11px, 2vw, 15px);
+  letter-spacing: 1.3px;
+}
+
+.loader-bar {
+  margin-top: 23px;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.11);
+  border: 1px solid rgba(255,79,216,0.30);
+}
+
+.loader-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff1493, #ff72df, #ffd1f4);
+  box-shadow: 0 0 20px rgba(255,79,216,0.9);
+  animation: loadingFill 3.15s ease forwards;
+}
+
+@keyframes loadingFill {
+  to { width: 100%; }
+}
+
+@keyframes titlePulse {
+  from { opacity: 0.73; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1.015); }
+}
+
+/* Music */
+.music-btn {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  z-index: 40;
+  border: 1px solid rgba(255,160,235,0.62);
+  border-radius: 999px;
+  padding: 10px 15px;
+  background: rgba(26,0,24,0.58);
+  color: #ffe7fb;
+  font-weight: 800;
+  font-size: clamp(12px, 1.8vw, 14px);
+  font-family: var(--font-main);
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  box-shadow:
+    0 0 18px rgba(255,20,147,0.35),
+    inset 0 0 14px rgba(255,79,216,0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.music-btn:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 28px rgba(255,20,147,0.58);
+}
+
+.tap-music-hint {
+  position: fixed;
+  top: 64px;
+  right: 15px;
+  z-index: 39;
+  max-width: 245px;
+  padding: 10px 13px;
+  border-radius: 16px;
+  background: rgba(15,0,16,0.72);
+  border: 1px solid rgba(255,79,216,0.43);
+  color: #ffd8f7;
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 0 18px rgba(255,20,147,0.25);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+
+.tap-music-hint.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.credit {
+  position: fixed;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  z-index: 45;
+  width: min(94vw, 720px);
+  text-align: center;
+  color: #ffd3f5;
+  font-family: var(--font-main);
+  font-size: clamp(10px, 1.7vw, 13px);
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-shadow: 0 0 8px rgba(255,79,216,1), 0 0 18px rgba(255,20,147,0.75);
+  pointer-events: none;
+}
+
+/* Phone portrait rotate warning */
+#rotateWarning {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 26px;
+  text-align: center;
+  background:
+    radial-gradient(circle at center, rgba(255,20,147,0.22), rgba(0,0,0,0.91) 58%),
+    #000;
+  color: #ffe4fa;
+}
+
+.rotate-card {
+  width: min(92vw, 420px);
+  padding: 28px 22px;
+  border-radius: 28px;
+  border: 1px solid rgba(255,79,216,0.56);
+  background: rgba(18,0,20,0.74);
+  box-shadow:
+    0 0 38px rgba(255,20,147,0.31),
+    inset 0 0 24px rgba(255,79,216,0.11);
+}
+
+.phone-icon {
+  width: 74px;
+  height: 118px;
+  margin: 0 auto 24px;
+  border: 4px solid #ff9bea;
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 0 14px rgba(255,79,216,0.9), inset 0 0 12px rgba(255,79,216,0.25);
+  animation: rotatePhone 1.7s ease-in-out infinite;
+}
+
+.phone-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: #ff9bea;
+  box-shadow: 0 0 10px #ff4fd8;
+}
+
+.phone-icon::after {
+  content: "↻";
+  position: absolute;
+  right: -42px;
+  top: 35px;
+  font-size: 36px;
+  color: #ff4fd8;
+  text-shadow: var(--glow-strong);
+}
+
+@keyframes rotatePhone {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(90deg) scale(1.05); }
+}
+
+.rotate-card h2 {
+  font-family: var(--font-main);
+  font-size: 22px;
+  line-height: 1.35;
+  color: #ffe2fa;
+  text-shadow: var(--glow-soft);
+}
+
+.rotate-card p {
+  margin-top: 13px;
+  font-family: var(--font-main);
+  color: rgba(255,220,248,0.84);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body.phone-portrait #rotateWarning { display: flex; }
+body.phone-portrait #app { display: none; }
+
+@media (max-width: 820px) and (orientation: landscape) {
+  .glow-border { inset: 7px; border-radius: 17px; }
+  .glow-border::before,
+  .glow-border::after { width: 56px; height: 56px; }
+  .hud-text { font-size: 8px; opacity: 0.82; }
+  .hud-tl { top: 10px; left: 12px; }
+  .hud-tr { top: 10px; right: 12px; }
+  .hud-bl { bottom: 33px; left: 12px; }
+  .code-line { font-size: 9px; }
+  .music-btn { top: 9px; right: 9px; padding: 8px 12px; font-size: 12px; }
+  .tap-music-hint { top: 50px; right: 9px; font-size: 12px; }
+  .loader-box { padding: 16px; }
+  .credit { bottom: 5px; font-size: 10px; }
+}
+</style>
+</head>
+
+<body>
+<div id="rotateWarning">
+  <div class="rotate-card">
+    <div class="phone-icon"></div>
+    <h2>Please rotate your phone 90° to 180° for the best experience 💗</h2>
+    <p>The page will open automatically when your phone is in landscape mode.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="bg-photo"></div>
+  <div class="dark-overlay"></div>
+
+  <canvas id="matrixCanvas"></canvas>
+  <canvas id="particleCanvas"></canvas>
+  <canvas id="sceneCanvas"></canvas>
+
+  <div class="glow-border"></div>
+  <div class="hud-text hud-tl">LOVE_OS v1.4.3<br>SYS: ACTIVE<br>ENCRYPT: ON</div>
+  <div class="hud-text hud-tr">TARGET: NIKITA<br>SIGNAL: ❤❤❤❤❤<br>STATUS: LOVE</div>
+  <div class="hud-text hud-bl">MATRIX: RUNNING<br>HEARTS: ∞</div>
+
+  <div class="code-line one">LOVE_MATRIX.init("NIKITA") // encrypted-heart-sequence</div>
+  <div class="code-line two">SYSTEM.ACCESS: PINK_CORE_AUTHORIZED ♥</div>
+  <div class="code-line three">emotion.stream = ["YOU", "ARE", "MY", "LOVE"];</div>
+  <div class="code-line four">heart.render(143, "NIKITA", true);</div>
+
+  <div class="scanlines"></div>
+
+  <div id="loadingScene" class="loading-scene">
+    <div class="loader-box">
+      <div class="loader-title">Initializing Love Matrix...</div>
+      <div class="loader-sub">Connecting pink hacker heart system...</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Change music file here -->
+  <audio id="bgMusic" src="https://raw.githubusercontent.com/sumitro7/music/main/tujh_bin.mp3" preload="auto" loop playsinline></audio>
+
+  <button id="musicBtn" class="music-btn" type="button">🔊 Music ON</button>
+  <div id="tapMusicHint" class="tap-music-hint">Tap anywhere to start music 🎵</div>
+
+  <div class="credit">Concept, Design &amp; Creative Direction by Sumitro</div>
+</div>
+
+<script>
+"use strict";
+
+/*
+  ============================================================
+  TEXT + ANIMATION SETTINGS
+  ============================================================
+*/
+const CONFIG = {
+  sentenceWords: ["I", "LOVE", "YOU", "❤️", "NIKITA"],
+  finalHeartText: "ILU=143=<3=YOU=NIKITA",
+
+  loadingDelay: 3200,
+  wordGatherTime: 1700,
+  wordHoldTime: 720,
+  wordFadeTime: 600,
+  heartGatherTime: 2600,
+
+  matrixSpeed: 1.22,
+  matrixFade: 0.078,
+  particleDesktop: 185,
+  particleMobile: 105
+};
+
+const matrixCanvas = document.getElementById("matrixCanvas");
+const particleCanvas = document.getElementById("particleCanvas");
+const sceneCanvas = document.getElementById("sceneCanvas");
+
+const mtx = matrixCanvas.getContext("2d");
+const ptx = particleCanvas.getContext("2d");
+const stx = sceneCanvas.getContext("2d");
+
+const loadingScene = document.getElementById("loadingScene");
+const audio = document.getElementById("bgMusic");
+const musicBtn = document.getElementById("musicBtn");
+const tapMusicHint = document.getElementById("tapMusicHint");
+
+let W = 0;
+let H = 0;
+let DPR = 1;
+
+let matrixFontSize = 18;
+let matrixColumns = 0;
+let matrixDrops = [];
+
+let particles = [];
+let sceneMode = "loading";
+
+let wordIndex = 0;
+let wordStartTime = 0;
+let wordDots = [];
+
+let heartStartTime = 0;
+let heartDots = [];
+let heartOutlineDots = [];
+let floatingHearts = [];
+let orbitHearts = [];
+
+let userWantsMusic = true;
+let musicBlocked = false;
+let musicUnlocked = false;
+
+const matrixChars = ["I", "L", "O", "V", "E", "U", "N", "I", "K", "I", "T", "A", "❤", "♥", "♡", "✦", "✧", "•", "·", "⋅", "*", "1", "4", "3"];
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+function isPhoneDevice() {
+  const hasTouch = navigator.maxTouchPoints > 0;
+  const screenMin = Math.min(window.screen.width || window.innerWidth, window.screen.height || window.innerHeight);
+  const windowMin = Math.min(window.innerWidth, window.innerHeight);
+  return hasTouch && (screenMin <= 820 || windowMin <= 540);
+}
+
+function updateRotateWarning() {
+  const portrait = window.innerHeight > window.innerWidth;
+  document.body.classList.toggle("phone-portrait", isPhoneDevice() && portrait);
+}
+
+function resizeCanvas(canvas, ctx) {
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+
+function resizeAll() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 1.65);
+
+  resizeCanvas(matrixCanvas, mtx);
+  resizeCanvas(particleCanvas, ptx);
+  resizeCanvas(sceneCanvas, stx);
+
+  setupMatrix();
+  setupParticles();
+
+  if (sceneMode === "word") {
+    createWordDots(CONFIG.sentenceWords[wordIndex] || CONFIG.sentenceWords[0]);
+    wordStartTime = performance.now();
+  }
+
+  if (sceneMode === "heart") {
+    createHeartDots();
+    heartStartTime = performance.now() - CONFIG.heartGatherTime;
+  }
+
+  updateRotateWarning();
+}
+
+window.addEventListener("resize", resizeAll);
+window.addEventListener("orientationchange", () => setTimeout(resizeAll, 260));
+
+function setupMatrix() {
+  // Brighter and larger matrix characters, with tighter column spacing.
+  matrixFontSize = clamp(Math.floor(W / 43), 17, 27);
+  const columnGap = matrixFontSize * 0.82;
+  matrixColumns = Math.ceil(W / columnGap) + 3;
+  matrixDrops = Array.from({ length: matrixColumns }, () => random(-H / matrixFontSize, 0));
+}
+
+function drawMatrix() {
+  /*
+    Background-safe matrix rain:
+    the canvas is cleared to transparency every frame, not painted black.
+    This keeps the background photo visible from start to end.
+  */
+  mtx.clearRect(0, 0, W, H);
+
+  const columnGap = matrixFontSize * 0.82;
+  const trailLength = Math.min(16, Math.max(9, Math.floor(H / 68)));
+
+  mtx.font = `900 ${matrixFontSize}px "Courier New", monospace`;
+  mtx.textAlign = "center";
+  mtx.textBaseline = "top";
+  mtx.globalCompositeOperation = "lighter";
+
+  for (let i = 0; i < matrixColumns; i++) {
+    const x = i * columnGap + matrixFontSize / 2;
+    const headY = matrixDrops[i] * matrixFontSize;
+
+    // Soft vertical glow beam behind some columns for a heavier hacker effect.
+    if (i % 3 === 0) {
+      const beam = mtx.createLinearGradient(x, 0, x, H);
+      beam.addColorStop(0, "rgba(255,79,216,0)");
+      beam.addColorStop(0.45, "rgba(255,20,147,0.105)");
+      beam.addColorStop(1, "rgba(255,79,216,0)");
+      mtx.globalAlpha = 0.7;
+      mtx.fillStyle = beam;
+      mtx.fillRect(x - matrixFontSize * 0.35, 0, matrixFontSize * 0.7, H);
+    }
+
+    for (let t = 0; t < trailLength; t++) {
+      const y = headY - t * matrixFontSize;
+      if (y < -matrixFontSize || y > H + matrixFontSize) continue;
+
+      const ch = matrixChars[(Math.floor(matrixDrops[i]) + i + t + Math.floor(Math.random() * 4)) % matrixChars.length];
+      const fade = 1 - t / trailLength;
+      const lead = t === 0;
+      const hot = Math.random() > 0.84;
+
+      mtx.globalAlpha = lead ? 1 : 0.68 * fade;
+      mtx.lineWidth = lead ? 1.8 : 1.05;
+      mtx.strokeStyle = hot ? "rgba(255,255,255,0.85)" : "rgba(255,20,147,0.78)";
+      mtx.fillStyle = lead ? "#ffffff" : (hot ? "#ffe7fb" : "#ff63df");
+      mtx.shadowBlur = lead ? 34 : 20 * fade;
+      mtx.shadowColor = hot ? "#ffffff" : "#ff1493";
+
+      // Stroke + fill makes every matrix character visible on bright photos.
+      mtx.strokeText(ch, x, y);
+      mtx.fillText(ch, x, y);
+
+      // Extra tiny glow dot below the leading characters.
+      if (lead && Math.random() > 0.55) {
+        mtx.beginPath();
+        mtx.arc(x, y + matrixFontSize * 0.82, Math.max(1.1, matrixFontSize * 0.09), 0, Math.PI * 2);
+        mtx.fillStyle = "rgba(255,230,251,0.95)";
+        mtx.shadowBlur = 18;
+        mtx.shadowColor = "#ff4fd8";
+        mtx.fill();
+      }
+    }
+
+    if (headY > H + matrixFontSize * trailLength && Math.random() > 0.95) {
+      matrixDrops[i] = random(-18, 0);
+    }
+
+    matrixDrops[i] += CONFIG.matrixSpeed + Math.random() * 0.34;
+  }
+
+  // Random diagonal sparkle cuts for extra premium effect, still transparent.
+  if (Math.random() > 0.84) {
+    const x1 = random(0, W);
+    const y1 = random(0, H);
+    const len = random(38, 105);
+    mtx.globalAlpha = random(0.20, 0.45);
+    mtx.strokeStyle = "rgba(255,225,250,0.9)";
+    mtx.lineWidth = random(0.8, 1.8);
+    mtx.shadowBlur = 18;
+    mtx.shadowColor = "#ff1493";
+    mtx.beginPath();
+    mtx.moveTo(x1, y1);
+    mtx.lineTo(x1 + len, y1 - len * 0.45);
+    mtx.stroke();
+  }
+
+  mtx.globalCompositeOperation = "source-over";
+  mtx.globalAlpha = 1;
+  mtx.shadowBlur = 0;
+}
+
+function setupParticles() {
+  const isSmall = Math.min(W, H) < 500;
+  const count = isSmall ? CONFIG.particleMobile : CONFIG.particleDesktop;
+
+  particles = Array.from({ length: count }, () => ({
+    x: random(0, W),
+    y: random(0, H),
+    r: random(0.9, 3.0),
+    vx: random(-0.22, 0.22),
+    vy: random(0.14, 0.72),
+    alpha: random(0.34, 0.96),
+    twinkle: random(0, Math.PI * 2)
+  }));
+}
+
+function drawParticles(time) {
+  ptx.clearRect(0, 0, W, H);
+
+  ptx.save();
+  ptx.globalCompositeOperation = "lighter";
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.twinkle += 0.026;
+
+    if (p.y > H + 12) {
+      p.y = -12;
+      p.x = random(0, W);
+    }
+    if (p.x < -12) p.x = W + 12;
+    if (p.x > W + 12) p.x = -12;
+
+    const alpha = p.alpha * (0.62 + Math.sin(p.twinkle) * 0.28);
+
+    ptx.beginPath();
+    ptx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ptx.fillStyle = `rgba(255,155,234,${alpha})`;
+    ptx.shadowBlur = 22;
+    ptx.shadowColor = "#ff4fd8";
+    ptx.fill();
+  }
+
+  for (let i = 0; i < 8; i++) {
+    const x = (Math.sin(time * 0.00025 + i) * 0.5 + 0.5) * W;
+    const y = (Math.cos(time * 0.00018 + i * 2) * 0.5 + 0.5) * H;
+
+    ptx.beginPath();
+    ptx.arc(x, y, 1.2 + Math.sin(time * 0.003 + i) * 0.65, 0, Math.PI * 2);
+    ptx.fillStyle = "rgba(255,214,247,0.55)";
+    ptx.shadowBlur = 22;
+    ptx.shadowColor = "#ff1493";
+    ptx.fill();
+  }
+
+  ptx.restore();
+  ptx.shadowBlur = 0;
+}
+
+function createWordDots(word) {
+  const off = document.createElement("canvas");
+  const octx = off.getContext("2d");
+
+  off.width = Math.floor(W);
+  off.height = Math.floor(H);
+
+  const fontSize = clamp(
+    Math.min(W / Math.max(word.length * 0.68, 1), H * 0.31),
+    40,
+    Math.min(150, H * 0.36)
+  );
+
+  octx.clearRect(0, 0, W, H);
+  octx.font = `900 ${fontSize}px Arial, Helvetica, sans-serif`;
+  octx.textAlign = "center";
+  octx.textBaseline = "middle";
+  octx.fillStyle = "#ffffff";
+  octx.fillText(word, W / 2, H / 2);
+
+  const image = octx.getImageData(0, 0, W, H);
+  const data = image.data;
+  const step = Math.max(4, Math.floor(fontSize / 19));
+  const targets = [];
+
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const index = (y * W + x) * 4 + 3;
+      if (data[index] > 90) targets.push({ x, y });
+    }
+  }
+
+  targets.sort(() => Math.random() - 0.5);
+
+  const maxDots = clamp(Math.floor(W * H / 870), 360, 1150);
+  const selected = targets.slice(0, maxDots);
+
+  wordDots = selected.map((target, i) => ({
+    tx: target.x,
+    ty: target.y,
+    x: W / 2 + random(-W * 0.58, W * 0.58),
+    y: H / 2 + random(-H * 0.58, H * 0.58),
+    size: random(1.35, 3.15),
+    delay: random(0, 0.20),
+    pulse: random(0, Math.PI * 2),
+    type: i % 12 === 0 ? "heart" : "dot"
+  }));
+}
+
+function startWordScene() {
+  sceneMode = "word";
+  wordIndex = 0;
+  wordStartTime = performance.now();
+  createWordDots(CONFIG.sentenceWords[wordIndex]);
+}
+
+function drawWordScene(time) {
+  stx.clearRect(0, 0, W, H);
+
+  const word = CONFIG.sentenceWords[wordIndex];
+  const total = CONFIG.wordGatherTime + CONFIG.wordHoldTime + CONFIG.wordFadeTime;
+  const elapsed = time - wordStartTime;
+
+  if (elapsed > total) {
+    wordIndex++;
+    if (wordIndex >= CONFIG.sentenceWords.length) {
+      startHeartScene();
+      return;
+    }
+
+    wordStartTime = time;
+    createWordDots(CONFIG.sentenceWords[wordIndex]);
+    return;
+  }
+
+  let gatherProgress = clamp(elapsed / CONFIG.wordGatherTime, 0, 1);
+  gatherProgress = easeOutCubic(gatherProgress);
+
+  let fade = 1;
+  if (elapsed > CONFIG.wordGatherTime + CONFIG.wordHoldTime) {
+    const fadeProgress = (elapsed - CONFIG.wordGatherTime - CONFIG.wordHoldTime) / CONFIG.wordFadeTime;
+    fade = 1 - clamp(fadeProgress, 0, 1);
+  }
+
+  const glowPulse = 0.76 + Math.sin(time * 0.004) * 0.22;
+
+  stx.save();
+  stx.globalCompositeOperation = "lighter";
+
+  for (const d of wordDots) {
+    const localProgress = clamp((gatherProgress - d.delay) / (1 - d.delay), 0, 1);
+    const e = easeInOutCubic(localProgress);
+    const x = d.x + (d.tx - d.x) * e;
+    const y = d.y + (d.ty - d.y) * e;
+    const alpha = clamp(e * 1.35, 0, 1) * fade;
+    const size = d.size + Math.sin(time * 0.005 + d.pulse) * 0.45;
+
+    stx.globalAlpha = alpha;
+
+    if (d.type === "heart") {
+      stx.font = `${size * 4.25}px Arial, Helvetica, sans-serif`;
+      stx.textAlign = "center";
+      stx.textBaseline = "middle";
+      stx.shadowBlur = 18;
+      stx.shadowColor = "#ff1493";
+      stx.fillStyle = "#ff8be7";
+      stx.fillText("♥", x, y);
+    } else {
+      stx.beginPath();
+      stx.arc(x, y, size, 0, Math.PI * 2);
+      stx.shadowBlur = 14 * glowPulse;
+      stx.shadowColor = "#ff4fd8";
+      stx.fillStyle = "#ffb8ef";
+      stx.fill();
+    }
+  }
+
+  stx.restore();
+
+  stx.save();
+  stx.globalAlpha = 0.13 * fade;
+  stx.font = `900 ${clamp(W / 15, 24, 64)}px Arial, Helvetica, sans-serif`;
+  stx.textAlign = "center";
+  stx.textBaseline = "middle";
+  stx.strokeStyle = "#ff4fd8";
+  stx.lineWidth = 1;
+  stx.shadowBlur = 24;
+  stx.shadowColor = "#ff1493";
+  stx.strokeText(word, W / 2, H / 2);
+  stx.restore();
+}
+
+function getHeartScale() {
+  return Math.min(W, H) / 33;
+}
+
+function getHeartCenter() {
+  return {
+    x: W / 2,
+    y: H / 2 - Math.min(12, H * 0.025)
+  };
+}
+
+function heartPoint(t, scale, centerX, centerY, fill = 1) {
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = -(
+    13 * Math.cos(t) -
+    5 * Math.cos(2 * t) -
+    2 * Math.cos(3 * t) -
+    Math.cos(4 * t)
+  );
+
+  return {
+    x: centerX + x * scale * fill,
+    y: centerY + y * scale * fill
+  };
+}
+
+function createHeartDots() {
+  const center = getHeartCenter();
+  const scale = getHeartScale();
+
+  const totalDots = clamp(Math.floor(W * H / 610), 760, 1850);
+  const outlineCount = clamp(Math.floor(Math.min(W, H) * 1.75), 320, 820);
+
+  heartDots = [];
+  heartOutlineDots = [];
+
+  for (let i = 0; i < totalDots; i++) {
+    const t = random(0, Math.PI * 2);
+    const fill = Math.pow(Math.random(), 0.42);
+    const target = heartPoint(t, scale, center.x, center.y, fill);
+
+    heartDots.push({
+      x: center.x + random(-W * 0.6, W * 0.6),
+      y: center.y + random(-H * 0.6, H * 0.6),
+      tx: target.x,
+      ty: target.y,
+      size: random(1.1, 3.25),
+      pulse: random(0, Math.PI * 2),
+      delay: random(0, 0.24),
+      type: i % 8 === 0 ? "heart" : "dot"
+    });
+  }
+
+  for (let i = 0; i < outlineCount; i++) {
+    const t = (i / outlineCount) * Math.PI * 2;
+    const target = heartPoint(t, scale * 1.035, center.x, center.y, 1);
+
+    heartOutlineDots.push({
+      x: center.x + random(-W * 0.5, W * 0.5),
+      y: center.y + random(-H * 0.5, H * 0.5),
+      tx: target.x,
+      ty: target.y,
+      size: random(1.55, 3.6),
+      pulse: random(0, Math.PI * 2),
+      delay: random(0, 0.18)
+    });
+  }
+
+  floatingHearts = Array.from({ length: 52 }, () => ({
+    x: random(W * 0.12, W * 0.88),
+    y: random(H * 0.1, H * 0.9),
+    size: random(10, 22),
+    speed: random(0.13, 0.46),
+    sway: random(0.4, 1.45),
+    phase: random(0, Math.PI * 2),
+    alpha: random(0.30, 0.76)
+  }));
+
+  orbitHearts = Array.from({ length: 22 }, (_, i) => ({
+    angle: (i / 22) * Math.PI * 2,
+    size: random(10, 18),
+    speed: random(0.00032, 0.00072),
+    alpha: random(0.38, 0.76)
+  }));
+}
+
+function startHeartScene() {
+  sceneMode = "heart";
+  heartStartTime = performance.now();
+  createHeartDots();
+}
+
+function drawHeartNeonPath(time, progress) {
+  const center = getHeartCenter();
+  const scale = getHeartScale();
+  const pulse = 1 + Math.sin(time * 0.003) * 0.035;
+
+  stx.save();
+  stx.translate(center.x, center.y);
+  stx.scale(pulse, pulse);
+  stx.translate(-center.x, -center.y);
+
+  for (let layer = 0; layer < 3; layer++) {
+    stx.beginPath();
+
+    for (let i = 0; i <= 360; i++) {
+      const t = (i / 360) * Math.PI * 2;
+      const p = heartPoint(t, scale * (1.04 + layer * 0.018), center.x, center.y, 1);
+      if (i === 0) stx.moveTo(p.x, p.y);
+      else stx.lineTo(p.x, p.y);
+    }
+
+    stx.closePath();
+    stx.globalAlpha = progress * (0.38 - layer * 0.072);
+    stx.lineWidth = 2 + layer * 3;
+    stx.strokeStyle = layer === 0 ? "#ffd1f4" : "#ff1493";
+    stx.shadowBlur = 36 + layer * 22;
+    stx.shadowColor = "#ff1493";
+    stx.stroke();
+  }
+
+  stx.restore();
+}
+
+function drawHeartScene(time) {
+  stx.clearRect(0, 0, W, H);
+
+  const elapsed = time - heartStartTime;
+  const progress = easeOutCubic(clamp(elapsed / CONFIG.heartGatherTime, 0, 1));
+  const center = getHeartCenter();
+  const pulse = 1 + Math.sin(time * 0.003) * 0.026;
+
+  drawHeartNeonPath(time, progress);
+
+  stx.save();
+  stx.translate(center.x, center.y);
+  stx.scale(pulse, pulse);
+  stx.translate(-center.x, -center.y);
+  stx.globalCompositeOperation = "lighter";
+
+  for (const d of heartDots) {
+    const localProgress = clamp((progress - d.delay) / (1 - d.delay), 0, 1);
+    const e = easeInOutCubic(localProgress);
+    const x = d.x + (d.tx - d.x) * e;
+    const y = d.y + (d.ty - d.y) * e;
+    const twinkle = 0.76 + Math.sin(time * 0.006 + d.pulse) * 0.24;
+
+    stx.globalAlpha = clamp(e * 1.18, 0, 1) * twinkle;
+
+    if (d.type === "heart") {
+      stx.font = `${d.size * 5}px Arial, Helvetica, sans-serif`;
+      stx.textAlign = "center";
+      stx.textBaseline = "middle";
+      stx.shadowBlur = 24;
+      stx.shadowColor = "#ff1493";
+      stx.fillStyle = "#ff77df";
+      stx.fillText("♥", x, y);
+    } else {
+      stx.beginPath();
+      stx.arc(x, y, d.size, 0, Math.PI * 2);
+      stx.shadowBlur = 17;
+      stx.shadowColor = "#ff4fd8";
+      stx.fillStyle = "#ffc4f3";
+      stx.fill();
+    }
+  }
+
+  for (const d of heartOutlineDots) {
+    const localProgress = clamp((progress - d.delay) / (1 - d.delay), 0, 1);
+    const e = easeInOutCubic(localProgress);
+    const x = d.x + (d.tx - d.x) * e;
+    const y = d.y + (d.ty - d.y) * e;
+    const size = d.size + Math.sin(time * 0.008 + d.pulse) * 0.7;
+
+    stx.globalAlpha = clamp(e * 1.2, 0, 1);
+    stx.beginPath();
+    stx.arc(x, y, size, 0, Math.PI * 2);
+    stx.shadowBlur = 26;
+    stx.shadowColor = "#ff1493";
+    stx.fillStyle = "#ffe1fa";
+    stx.fill();
+  }
+
+  stx.restore();
+
+  drawOrbitHearts(time, progress);
+  drawFloatingHearts(time, progress);
+  drawHeartText(time, progress);
+}
+
+function drawOrbitHearts(time, progress) {
+  const center = getHeartCenter();
+  const rx = Math.min(W * 0.34, getHeartScale() * 18);
+  const ry = Math.min(H * 0.36, getHeartScale() * 15);
+
+  stx.save();
+  stx.globalCompositeOperation = "lighter";
+
+  for (const o of orbitHearts) {
+    const angle = o.angle + time * o.speed;
+    const x = center.x + Math.cos(angle) * rx;
+    const y = center.y + Math.sin(angle) * ry;
+
+    stx.globalAlpha = progress * o.alpha;
+    stx.font = `${o.size}px Arial, Helvetica, sans-serif`;
+    stx.textAlign = "center";
+    stx.textBaseline = "middle";
+    stx.shadowBlur = 18;
+    stx.shadowColor = "#ff1493";
+    stx.fillStyle = "#ff9bea";
+    stx.fillText("♥", x, y);
+  }
+
+  stx.restore();
+}
+
+function drawFloatingHearts(time, progress) {
+  for (const hrt of floatingHearts) {
+    hrt.y -= hrt.speed;
+    hrt.x += Math.sin(time * 0.0015 + hrt.phase) * hrt.sway * 0.22;
+
+    if (hrt.y < -30) {
+      hrt.y = H + 30;
+      hrt.x = random(W * 0.12, W * 0.88);
+    }
+
+    stx.save();
+    stx.globalAlpha = progress * hrt.alpha * (0.65 + Math.sin(time * 0.004 + hrt.phase) * 0.25);
+    stx.font = `${hrt.size}px Arial, Helvetica, sans-serif`;
+    stx.textAlign = "center";
+    stx.textBaseline = "middle";
+    stx.shadowBlur = 18;
+    stx.shadowColor = "#ff1493";
+    stx.fillStyle = "#ff8be7";
+    stx.fillText("♥", hrt.x, hrt.y);
+    stx.restore();
+  }
+}
+
+function getHeartTextLines(text) {
+  if (W > 900) return [text];
+  if (W > 560) return ["ILU=143=<3", "YOU=NIKITA"];
+  return ["ILU=143", "<3=YOU", "NIKITA"];
+}
+
+function getFittedFontSize(lines, maxWidth, maxSize, minSize) {
+  let size = maxSize;
+  while (size > minSize) {
+    stx.font = `900 ${size}px Arial, Helvetica, sans-serif`;
+    const widest = Math.max(...lines.map(line => stx.measureText(line).width));
+    if (widest <= maxWidth) return size;
+    size -= 1;
+  }
+  return minSize;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+
+function drawHeartText(time, progress) {
+  const alpha = clamp((progress - 0.36) / 0.64, 0, 1);
+  if (alpha <= 0) return;
+
+  const center = getHeartCenter();
+  const scale = getHeartScale();
+  const lines = getHeartTextLines(CONFIG.finalHeartText);
+
+  const maxTextWidth = Math.min(W * 0.54, scale * 22);
+  const maxFont = clamp(Math.min(W / 28, H / 12), 17, 34);
+  const minFont = 12;
+  const fontSize = getFittedFontSize(lines, maxTextWidth, maxFont, minFont);
+
+  stx.font = `900 ${fontSize}px Arial, Helvetica, sans-serif`;
+  const widest = Math.max(...lines.map(line => stx.measureText(line).width));
+
+  const lineHeight = fontSize * 1.25;
+  const totalTextHeight = lineHeight * lines.length;
+  const boxPaddingX = fontSize * 1.05;
+  const boxPaddingY = fontSize * 0.85;
+
+  const boxW = widest + boxPaddingX * 2;
+  const boxH = totalTextHeight + boxPaddingY * 2;
+  const boxX = center.x - boxW / 2;
+  const boxY = center.y - boxH / 2 + fontSize * 0.1;
+  const pulse = 1 + Math.sin(time * 0.004) * 0.028;
+
+  stx.save();
+  stx.translate(center.x, center.y);
+  stx.scale(pulse, pulse);
+  stx.translate(-center.x, -center.y);
+  stx.globalAlpha = alpha;
+
+  roundRect(stx, boxX, boxY, boxW, boxH, 16);
+  stx.fillStyle = "rgba(12,0,16,0.58)";
+  stx.shadowBlur = 26;
+  stx.shadowColor = "#ff1493";
+  stx.fill();
+
+  roundRect(stx, boxX, boxY, boxW, boxH, 16);
+  stx.lineWidth = 1.4;
+  stx.strokeStyle = "rgba(255,210,246,0.74)";
+  stx.shadowBlur = 18;
+  stx.shadowColor = "#ff4fd8";
+  stx.stroke();
+
+  stx.font = `900 ${fontSize}px Arial, Helvetica, sans-serif`;
+  stx.textAlign = "center";
+  stx.textBaseline = "middle";
+  stx.shadowBlur = 23;
+  stx.shadowColor = "#ff1493";
+  stx.fillStyle = "#ffe9fb";
+
+  const firstLineY = center.y - totalTextHeight / 2 + lineHeight / 2 + fontSize * 0.1;
+  lines.forEach((line, i) => {
+    stx.fillText(line, center.x, firstLineY + i * lineHeight);
+  });
+
+  stx.restore();
+}
+
+function updateMusicButton() {
+  if (!audio.paused && !audio.ended) {
+    musicBtn.textContent = "🔊 Music ON";
+    tapMusicHint.classList.remove("show");
+    musicBlocked = false;
+    return;
+  }
+
+  if (userWantsMusic && musicBlocked) {
+    musicBtn.textContent = "🔈 Tap to Start";
+    tapMusicHint.classList.add("show");
+  } else {
+    musicBtn.textContent = "🔇 Music OFF";
+    tapMusicHint.classList.remove("show");
+  }
+}
+
+async function playMusic() {
+  userWantsMusic = true;
+  audio.volume = 1;
+
+  try {
+    await audio.play();
+    musicUnlocked = true;
+    musicBlocked = false;
+  } catch (error) {
+    // Android/iPhone/Chrome can block autoplay until first user tap.
+    musicBlocked = true;
+  }
+
+  updateMusicButton();
+}
+
+function pauseMusic() {
+  userWantsMusic = false;
+  musicBlocked = false;
+  audio.pause();
+  updateMusicButton();
+}
+
+musicBtn.addEventListener("click", async event => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (audio.paused || audio.ended) {
+    await playMusic();
+  } else {
+    pauseMusic();
+  }
+});
+
+function firstUserGestureMusicStart() {
+  if (userWantsMusic && audio.paused && !musicUnlocked) {
+    playMusic();
+  }
+}
+
+window.addEventListener("pointerdown", firstUserGestureMusicStart, { passive: true });
+window.addEventListener("touchstart", firstUserGestureMusicStart, { passive: true });
+window.addEventListener("keydown", firstUserGestureMusicStart);
+
+audio.addEventListener("play", updateMusicButton);
+audio.addEventListener("pause", updateMusicButton);
+audio.addEventListener("ended", updateMusicButton);
+
+function animate(time) {
+  requestAnimationFrame(animate);
+
+  drawMatrix();
+  drawParticles(time);
+
+  if (sceneMode === "word") {
+    drawWordScene(time);
+  } else if (sceneMode === "heart") {
+    drawHeartScene(time);
+  } else {
+    stx.clearRect(0, 0, W, H);
+  }
+}
+
+function boot() {
+  resizeAll();
+  requestAnimationFrame(animate);
+  playMusic();
+
+  setTimeout(() => {
+    loadingScene.classList.add("hide");
+    startWordScene();
+  }, CONFIG.loadingDelay);
+}
+
+boot();
+</script>
+</body>
+</html>
